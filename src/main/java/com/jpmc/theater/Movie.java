@@ -1,4 +1,4 @@
-pakage com.jpmc.theater;
+package com.jpmc.theater;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
