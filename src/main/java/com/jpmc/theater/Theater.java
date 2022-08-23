@@ -1,5 +1,8 @@
 package com.jpmc.theater;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,9 +13,10 @@ public class Theater {
 
     LocalDateProvider provider;
     private final List<Showing> schedule;
-
+    ObjectMapper mapper;
     public Theater(LocalDateProvider provider) {
         this.provider = provider;
+        mapper = new ObjectMapper().findAndRegisterModules();
 
         Movie spiderMan = new Movie("Spider-Man: No Way Home", Duration.ofMinutes(90), 12.5, 1);
         Movie turningRed = new Movie("Turning Red", Duration.ofMinutes(85), 11, 0);
@@ -30,7 +34,7 @@ public class Theater {
         );
     }
 
-    public Reservation reserve(int sequence, int howManyTickets) {
+    public Reservation reserve(Customer customer, int sequence, int howManyTickets) {
         Showing showing;
         try {
             showing = schedule.get(sequence - 1);
@@ -38,7 +42,7 @@ public class Theater {
             ex.printStackTrace();
             throw new IllegalStateException("not able to find any showing for given sequence " + sequence);
         }
-        return new Reservation(showing, howManyTickets);
+        return new Reservation(customer, showing, howManyTickets);
     }
 
     public void printSchedule() {
@@ -57,6 +61,17 @@ public class Theater {
         return String.format("(%s hour%s %s minute%s)", hour, handlePlural(hour), remainingMin, handlePlural(remainingMin));
     }
 
+    public void printScheduleJson(){
+
+        System.out.println("===================================================");
+        try {
+            System.out.println(mapper.writeValueAsString(schedule));
+        } catch (JsonProcessingException e) {
+            System.out.println("Unable to print schedule, please check again later");
+        }
+        System.out.println("===================================================");
+    }
+
     // (s) postfix should be added to handle plural correctly
     private String handlePlural(long value) {
         if (value == 1) {
@@ -70,5 +85,6 @@ public class Theater {
     public static void main(String[] args) {
         Theater theater = new Theater(LocalDateProvider.singleton());
         theater.printSchedule();
+        theater.printScheduleJson();
     }
 }
